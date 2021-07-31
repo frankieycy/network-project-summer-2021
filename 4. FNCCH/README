@@ -1,0 +1,32 @@
+#### Quick Guide to use FunctionalNetwork ####
+
+Four files:
+- DIV25_spks.txt : spike timestamps of the following format, this is the core file as input
+    (total spike count) (spike timestamp 0) (spike timestamp 1) ... (spike timestamp n)
+- FunctionalNetwork.py : library for FNCCH reconstruction
+- Example.py : example run of FNCCH reconstruction (illustrating the framework of a reconstruction run)
+- Report.py : report reconstruction results after calculations finish, see the file for details
+
+After running Example.py, a folder named "out-w=..." appears,
+containing Numpy binary files in extension .npy for intermediate calculations.
+
+For exc links, the following .npy files are generated.
+The same definitions apply to inh links.
+- t_exc.npy : tau* for exc links
+- C_exc.npy : cross-correlations for exc links
+- idx_exc.npy : indices on coupling strength matrix for exc links
+- t_exc_thres.npy : tau* for exc links, after imposing s.d. thresholding
+- C_exc_thres.npy : cross-correlations for exc links, after imposing s.d. thresholding
+- idx_exc_thres.npy : indices on coupling strength matrix for exc links, after imposing s.d. thresholding
+- t_exc_phyfilter.npy : tau* for exc links, after imposing s.d. thresholding and physical filters
+- C_exc_phyfilter.npy : cross-correlations for exc links, after imposing s.d. thresholding and physical filters
+- idx_exc_phyfilter.npy : indices on coupling strength matrix for exc links, after imposing s.d. thresholding and physical filters
+
+Python libraries required:
+- tqdm : for displaying progress bar
+- numpy : for vectorized numerical calculations
+- matplotlib : for producing plots
+- pycorrelate : for fast correlation calculations
+
+To run the example, in the terminal, do:
+    python Example.py

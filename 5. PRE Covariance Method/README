@@ -1,0 +1,14 @@
+#### Quick Guide to use covMethod.py ####
+
+covMethod.py estimates the information matrix Qij based on time-lagged noise-induced covariance matrix Mij. Gaussian mixture model is applied to each column of Mij for a two-group classification and entries significantly non-zero are inferred as a network link.
+
+Required inputs:
+- states matrix: each row as the state time series of a node
+- tau: physical time that each time step in time series corresponds to
+
+Python libraries required:
+- tqdm
+- numpy
+- matplotlib
+- scipy
+- sklearn

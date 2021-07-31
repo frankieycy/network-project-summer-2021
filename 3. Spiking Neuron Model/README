@@ -1,0 +1,20 @@
+#### Quick Guide to use SpikingNeuronModel ####
+
+Four files:
+- DIV25_PREmethod.npy : coupling strength matrix in Numpy .npy binary file format
+- SpikingNeuronModel.py : library for conductance-based spiking neuron model
+- Example-1.py : example run of model from scratch for 40 time steps (illustrating the framework of a simulation run)
+- Example-2.py : example run of model continuing from 40 time steps till 100 time steps (illustrating the loadFromPrev argument)
+
+After running Example-1.py, two folders appear, namely 'out-plot/' and 'out-cont/'
+- 'out-plot/' : to store raster & time series plots
+- 'out-cont/' : to store necessary continuation files (model params & network states) for future runs
+
+Python libraries required:
+- tqdm
+- numpy
+- matplotlib
+
+To run the examples, in the terminal, do:
+1. python Example-1.py
+2. python Example-2.py
