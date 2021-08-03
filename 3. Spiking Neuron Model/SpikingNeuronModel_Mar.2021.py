@@ -1,6 +1,9 @@
 '''
 Conductance-based Spiking Neuron Model based on EM Izhikevich's basic model
-@ Frankie Yeung (2021 May)
+@ Frankie Yeung (2021 Mar)
+CAUTION:
+- The code (mistakenly) drives the dynamics using uniform random variables over [0,1]
+- See SpikingNeuronModel.py for the updated code, with changes made in runDynamics()
 '''
 import os,re,glob
 from tqdm import tqdm
@@ -52,7 +55,7 @@ class SpikingNeuronModel:
         'voltageThres_inh': -80,
         'tau_exc': 5,
         'tau_inh': 6,
-        'beta': 2
+        'beta': 1
     }):
         # model params
         self.voltageThres_exc = dynamicalParamDict['voltageThres_exc']
@@ -71,10 +74,10 @@ class SpikingNeuronModel:
             # following params in EM Izhikevich's paper
             # exc nodes obeying one set of a,b,c,d params and inh nodes obeying another set
             rand_exc = np.random.rand(self.N_exc); rand_inh = np.random.rand(self.N_inh)
-            self.a = np.zeros(self.N); self.a[self.idxExcNodes],self.a[self.idxInhNodes] = 0.02,0.1
-            self.b = np.zeros(self.N); self.b[self.idxExcNodes],self.b[self.idxInhNodes] = 0.2,0.2
-            self.c = np.zeros(self.N); self.c[self.idxExcNodes],self.c[self.idxInhNodes] = -65,-65
-            self.d = np.zeros(self.N); self.d[self.idxExcNodes],self.d[self.idxInhNodes] = 8,2
+            self.a = np.zeros(self.N); self.a[self.idxExcNodes],self.a[self.idxInhNodes] = 0.02*np.ones(self.N_exc),0.02+0.08*rand_inh
+            self.b = np.zeros(self.N); self.b[self.idxExcNodes],self.b[self.idxInhNodes] = 0.2*np.ones(self.N_exc),0.25-0.05*rand_inh
+            self.c = np.zeros(self.N); self.c[self.idxExcNodes],self.c[self.idxInhNodes] = -65+15*rand_exc**2,-65*np.ones(self.N_inh)
+            self.d = np.zeros(self.N); self.d[self.idxExcNodes],self.d[self.idxInhNodes] = 8-6*rand_exc**2,2*np.ones(self.N_inh)
 
     def initDynamics(self, totIter, plotStep=500):
         '''
@@ -123,14 +126,14 @@ class SpikingNeuronModel:
         sumForEachIdx = np.array([np.sum(np.exp(-(t-np.array(self.spikeTimeHistory[i]))/tau)) for i in idx])
         return sumForEachIdx
 
-    def runDynamics(self, dt=1):
+    def runDynamics(self):
         ''' run the spiking neuron model '''
-        sqrtDt = np.sqrt(dt)
         pbar = tqdm(total=self.totIter)
         pbar.update(self.prevIter)
         for t in range(self.prevIter,self.totIter):
             #### noise ####
-            noise = np.random.normal(0,3,self.N)
+            current = np.zeros(self.N)
+            current[self.idxExcNodes],current[self.idxInhNodes] = 5*np.random.rand(self.N_exc),2*np.random.rand(self.N_inh)
 
             #### reset spike ####
             idxSpikingNodes = (self.voltage>=30)
@@ -143,12 +146,11 @@ class SpikingNeuronModel:
                 self.historicalDecayFactorSum(self.idxPosCoupling[i],t,self.tau_exc)) for i in range(self.N)])
             conductance_inh = self.beta*np.array([np.sum(np.abs(self.Coupling[i,self.idxNegCoupling[i]])*\
                 self.historicalDecayFactorSum(self.idxNegCoupling[i],t,self.tau_inh)) for i in range(self.N)])
-            current = conductance_exc*(self.voltageThres_exc-self.voltage)+conductance_inh*(self.voltageThres_inh-self.voltage)
+            current += conductance_exc*(self.voltageThres_exc-self.voltage)+conductance_inh*(self.voltageThres_inh-self.voltage)
 
-            delta_voltage = (.04*self.voltage**2+5*self.voltage+140-self.recover+current)*dt+noise*sqrtDt
-            delta_recover = self.a*(self.b*self.voltage-self.recover)*dt
-            self.voltage += delta_voltage
-            self.recover += delta_recover
+            self.voltage += 0.5*(.04*self.voltage**2+5*self.voltage+140-self.recover+current)
+            self.voltage += 0.5*(.04*self.voltage**2+5*self.voltage+140-self.recover+current)
+            self.recover += self.a*(self.b*self.voltage-self.recover)
 
             idxSpikingNodes = (self.voltage>=30)
             self.voltage[idxSpikingNodes] = 30 # equalize all spikes to 30eV
