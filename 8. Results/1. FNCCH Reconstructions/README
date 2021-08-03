@@ -1,0 +1,10 @@
+Note:
+
+> link_1.txt reports uni-directional links with format:
+    i j tau* Cij(tau*)
+    where i < j and Cij(tau*) has mean subtracted (normalized)
+    if tau* > 0, we infer that a link points from i -> j
+
+> link_2.txt reports bi-directional links with format:
+    i j tau*(>0) Cij(tau*) tau*(<0) Cij(tau*)
+    where i < j and Cij(tau*) has mean subtracted (normalized)
